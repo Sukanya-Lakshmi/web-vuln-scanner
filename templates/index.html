@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SecPulse // Web Vulnerability Scanner</title>
+  <style>
+    :root {
+      --bg: #070b14;
+      --panel: #0e1626;
+      --panel-2: #131f35;
+      --border: #1e2d48;
+      --text: #e5edf8;
+      --muted: #8fa1bf;
+      --accent: #22d3ee;
+      --accent-dim: rgba(34, 211, 238, 0.14);
+      --high: #f87171;
+      --med: #fbbf24;
+      --low: #38bdf8;
+      --ok: #34d399;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at top, #101d36 0%, var(--bg) 55%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    .container { max-width: 1080px; margin: 0 auto; padding: 2rem 1.25rem 3.5rem; }
+    .topbar {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 1.75rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border);
+    }
+    .brand { display: flex; align-items: center; gap: 0.65rem; font-family: ui-monospace, monospace; font-weight: 700; letter-spacing: 0.04em; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px var(--accent); }
+    .badge-env {
+      font-family: ui-monospace, monospace; font-size: 0.78rem; color: var(--accent);
+      background: var(--accent-dim); border: 1px solid rgba(34, 211, 238, 0.35);
+      padding: 0.25rem 0.6rem; border-radius: 999px;
+    }
+    .hero h1 { margin: 0 0 0.4rem; font-size: 1.75rem; }
+    .hero p { margin: 0 0 1.5rem; color: var(--muted); }
+    code, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .card {
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.25rem; margin-bottom: 1.75rem;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+    }
+    .scan-form { display: grid; grid-template-columns: 1fr 130px auto; gap: 0.75rem; align-items: end; }
+    @media (max-width: 720px) { .scan-form { grid-template-columns: 1fr; } }
+    label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    input[type="text"], input[type="number"] {
+      width: 100%; padding: 0.68rem 0.8rem; border-radius: 8px;
+      border: 1px solid var(--border); background: var(--panel-2); color: var(--text);
+      font-size: 0.95rem;
+    }
+    input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
+    button {
+      padding: 0.7rem 1.25rem; border-radius: 8px; border: 1px solid var(--accent);
+      background: linear-gradient(135deg, #06b6d4, #0284c7); color: #04101d;
+      font-weight: 700; cursor: pointer; font-size: 0.92rem;
+    }
+    button:hover { filter: brightness(1.08); }
+    .flash { padding: 0.7rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.92rem; }
+    .flash-error { background: rgba(248, 113, 113, 0.14); border: 1px solid rgba(248, 113, 113, 0.4); color: #fca5a5; }
+    .flash-success { background: rgba(52, 211, 153, 0.14); border: 1px solid rgba(52, 211, 153, 0.4); color: #6ee7b7; }
+    h2 { margin: 0 0 1rem; font-size: 1.15rem; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 0.75rem 0.85rem; border-bottom: 1px solid var(--border); text-align: left; font-size: 0.9rem; }
+    th { color: var(--muted); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.06em; background: rgba(15, 23, 42, 0.6); }
+    tr:hover td { background: rgba(30, 41, 59, 0.45); }
+    .status-completed { color: var(--ok); font-family: ui-monospace, monospace; font-size: 0.82rem; }
+    .status-failed { color: var(--high); font-family: ui-monospace, monospace; font-size: 0.82rem; }
+    .status-running { color: var(--med); font-family: ui-monospace, monospace; font-size: 0.82rem; }
+    .counts span { margin-right: 0.35rem; font-family: ui-monospace, monospace; font-size: 0.82rem; }
+    .c-h { color: var(--high); }
+    .c-m { color: var(--med); }
+    .c-l { color: var(--low); }
+    a.btn-link {
+      color: var(--accent); text-decoration: none; font-weight: 600; font-size: 0.86rem;
+      border: 1px solid rgba(34, 211, 238, 0.35); padding: 0.3rem 0.65rem; border-radius: 6px;
+    }
+    a.btn-link:hover { background: var(--accent-dim); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div class="brand"><span class="dot"></span> SECPULSE // WEB VULN SCANNER</div>
+      <span class="badge-env">AUTHORIZED LAB MODE</span>
+    </div>
+
+    <div class="hero">
+      <h1>Automated Web Assessment Console</h1>
+      <p>Crawl authorized targets, inspect response headers, test input reflection, and review structured remediation.</p>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, msg in messages %}
+        <div class="flash flash-{{ category }}">{{ msg }}</div>
+      {% endfor %}
+    {% endwith %}
+
+    <div class="card">
+      <form class="scan-form" method="POST" action="{{ url_for('start_scan') }}">
+        <div>
+          <label for="target_url">Target URL</label>
+          <input id="target_url" type="text" name="target_url" placeholder="http://127.0.0.1:5001" required>
+        </div>
+        <div>
+          <label for="max_depth">Crawl Depth</label>
+          <input id="max_depth" type="number" name="max_depth" value="2" min="0" max="4">
+        </div>
+        <button type="submit">Launch Scan</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>Scan History</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Target</th>
+              <th>Depth</th>
+              <th>Crawled</th>
+              <th>Status</th>
+              <th>Severity (H / M / L)</th>
+              <th>Timestamp</th>
+              <th>Report</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in scans %}
+            <tr>
+              <td class="mono">#{{ s.id }}</td>
+              <td class="mono">{{ s.target_url }}</td>
+              <td class="mono">{{ s.max_depth }}</td>
+              <td class="mono">{{ s.visited_count or 0 }}</td>
+              <td><span class="status-{{ s.status }}">{{ s.status|upper }}</span></td>
+              <td class="counts">
+                <strong>{{ s.total_findings or 0 }}</strong>
+                (<span class="c-h">H:{{ s.high_count or 0 }}</span>
+                <span class="c-m">M:{{ s.medium_count or 0 }}</span>
+                <span class="c-l">L:{{ s.low_count or 0 }}</span>)
+              </td>
+              <td class="mono" style="color: var(--muted); font-size: 0.8rem;">{{ s.created_at }}</td>
+              <td><a class="btn-link" href="{{ url_for('scan_detail', scan_id=s.id) }}">Inspect</a></td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="7" style="color: var(--muted); text-align: center; padding: 1.5rem;">No scan runs recorded yet.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
